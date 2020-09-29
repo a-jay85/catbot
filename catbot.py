@@ -33,6 +33,7 @@ EGG1 = 'egg1.png'
 EGG3 = 'egg3.png'
 EGG_LEGENDARY = 'legendary_egg.png'
 EGG_MEGA = 'mega_egg.png'
+PANDEMIC = True
 
 gyms = None
 pokemon = None
@@ -70,12 +71,15 @@ ERR_INVALID_DATETIME = "Invalid date or time"
 
 def generate_post(is_egg, identifier, mins, gym, reporter):
     time = dt.datetime.now() + dt.timedelta(minutes=int(mins))
-    link = gyms.get_link(gym)
+    if PANDEMIC != True:
+        link = gyms.get_link(gym) + "\n"
+    else:
+        link = ""
     gym_name = gyms.get_name(gym)
     if gyms.is_ex(gym):
         gym_name = gym_name + ' 🎫'
     if is_egg:
-        content = "Level {} 🥚 at {}\n{}\nhatches at {} (in {} mins)\nreported by {}"\
+        content = "Level {} 🥚 at {}\n{}hatches at {} (in {} mins)\nreported by {}"\
             .format(identifier,
                     gym_name,
                     link,
@@ -83,7 +87,7 @@ def generate_post(is_egg, identifier, mins, gym, reporter):
                     mins,
                     reporter)
     else:
-        content = "{} at {}\n{}\nuntil {} ({} mins remaining)\nreported by {}"\
+        content = "{} at {}\n{}until {} ({} mins remaining)\nreported by {}"\
             .format(identifier.title(),
                     gym_name,
                     link,
@@ -317,16 +321,19 @@ async def whereis(ctx, *args):
     found = gyms.find(name)
     num_found = len(found)
 
-    if num_found == 0:
-        content = ERR_GYM_NOT_FOUND.format(name)
-    elif num_found <= 3:
-        locations = []
-        for gym in found:
-            link = gyms.get_link(gym)
-            locations.append(gyms.get_name(gym) + " is here " + link)
-        content = '\n'.join(locations)
+    if PANDEMIC != True:
+        if num_found == 0:
+            content = ERR_GYM_NOT_FOUND.format(name)
+        elif num_found <= 3:
+            locations = []
+            for gym in found:
+                link = gyms.get_link(gym)
+                locations.append(gyms.get_name(gym) + " is here " + link)
+            content = '\n'.join(locations)
+        else:
+            content = ERR_TOO_MANY_RESULTS
     else:
-        content = ERR_TOO_MANY_RESULTS
+        content = "Sorry, I'm lost right now. I'll find my way once Alameda County lifts its Essental Travel restrictions due to the COVID-19 pandemic."
 
     await ctx.send(content)
 
